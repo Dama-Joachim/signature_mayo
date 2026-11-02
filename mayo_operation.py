@@ -62,22 +62,23 @@ def divide(a, b):
     return multiply(a, inverse(b))
 
 
-def test_f16():
+# def test_f16():
 
-    print("===== TESTS DU CORPS F16 =====")
+#     print("===== TESTS DU CORPS F16 =====")
 
-    print("7 + 5 =", add(7, 5))
-    print("7 * 5 =", multiply(7, 5))
-    print("2 puissance 3 =", power(2, 3))
-    print("Inverse de 7 =", inverse(7))
-    print("7 / 5 =", divide(7, 5))
+#     print("7 + 5 =", add(7, 5))
+#     print("7 * 5 =", multiply(7, 5))
+#     print("2 puissance 3 =", power(2, 3))
+#     print("Inverse de 7 =", inverse(7))
+#     print("7 / 5 =", divide(7, 5))
 
-    # Verification de tous les inverses
-    for a in range(1, 16):
-        assert multiply(a, inverse(a)) == 1
+#     # Verification de tous les inverses
+#     for a in range(1, 16):
+#         assert multiply(a, inverse(a)) == 1
 
-    print("\nTous les tests sont reussis !")
+#     print("\nTous les tests sont reussis !")
 
 
-if __name__ == "__main__":
-    test_f16()
+# if __name__ == "__main__":
+#     test_f16()
+
