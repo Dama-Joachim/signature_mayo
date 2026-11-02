@@ -183,51 +183,46 @@ def solve_linear_system(A, b):
     return solution
 
 
+# def test_matrices():
 
-# =========================================
-# TESTS DE LA DEUXIEME ETAPE : LES MATRICES
-# =========================================
+#     A = [
+#         [1, 2],
+#         [3, 4]
+#     ]
 
-def test_matrices():
+#     B = [
+#         [5, 6],
+#         [7, 8]
+#     ]
 
-    A = [
-        [1, 2],
-        [3, 4]
-    ]
+#     print("\n===== TESTS DES MATRICES =====")
 
-    B = [
-        [5, 6],
-        [7, 8]
-    ]
+#     # Addition
+#     print("Addition :", matrix_add(A, B))
 
-    print("\n===== TESTS DES MATRICES =====")
+#     # Transposition
+#     print("Transposee :", matrix_transpose(A))
 
-    # Addition
-    print("Addition :", matrix_add(A, B))
+#     # Multiplication
+#     print("Multiplication :", matrix_multiply(A, B))
 
-    # Transposition
-    print("Transposee :", matrix_transpose(A))
+#     # Multiplication matrice-vecteur
+#     x = [5, 6]
+#     print("Produit matrice-vecteur :",
+#           matrix_vector_multiply(A, x))
 
-    # Multiplication
-    print("Multiplication :", matrix_multiply(A, B))
+#     # Resolution du systeme Ax = b
+#     b = [5, 6]
+#     solution = solve_linear_system(A, b)
 
-    # Multiplication matrice-vecteur
-    x = [5, 6]
-    print("Produit matrice-vecteur :",
-          matrix_vector_multiply(A, x))
+#     print("Solution du systeme :", solution)
 
-    # Resolution du systeme Ax = b
-    b = [5, 6]
-    solution = solve_linear_system(A, b)
+#     # Verification de la solution
+#     assert solution is not None
+#     assert matrix_vector_multiply(A, solution) == b
 
-    print("Solution du systeme :", solution)
-
-    # Verification de la solution
-    assert solution is not None
-    assert matrix_vector_multiply(A, solution) == b
-
-    print("\nTous les tests des matrices sont reussis !")
+#     print("\nTous les tests des matrices sont reussis !")
 
 
-if __name__ == "__main__":
-    test_matrices()
+# if __name__ == "__main__":
+#     test_matrices()

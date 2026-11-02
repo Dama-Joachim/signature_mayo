@@ -1,8 +1,6 @@
 
 #  implementation en python des operation dans le corps f16 
 
-
-
 # additon 
 def add(a, b):
     return a ^ b
