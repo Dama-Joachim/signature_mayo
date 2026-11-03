@@ -40,7 +40,7 @@ from mayo_keygen import (
     decode_nibbles,
     zero_matrix
 )
-from mayo_expand import parse_esk
+from mayo_expand_sk import parse_esk
 
 
 # ============================================================
@@ -198,7 +198,7 @@ def test_sign_module():
     print("\n===== TEST MODULE DE SIGNATURE (MAYO.Sign) =====")
 
     from mayo_keygen import generate_secret_seed
-    from mayo_expand import expand_secret_key
+    from mayo_expand_sk import expand_secret_key
 
     seed_sk = generate_secret_seed()
     esk = expand_secret_key(seed_sk)
