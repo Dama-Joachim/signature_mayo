@@ -631,7 +631,6 @@ def generate_keypair():
 
     # Décodage de O
     O = decode_O(encoded_O)
-
     # Génération de P1 et P2
     P1, P2 = generate_P1_P2(seed_pk)
 
