@@ -1,4 +1,3 @@
-
 """
 ============================================================
                     MAYO1 - KEY GENERATION
@@ -83,12 +82,15 @@ def zero_matrix(rows, cols):
 
 def upper_triangle(A):
     """
-    TITRE : Extraction du triangle supérieur.
+    TITRE : Calcul de Upper(A) selon la spécification MAYO.
 
     DESCRIPTION :
-    Conserve les éléments situés sur et au-dessus
-    de la diagonale principale d'une matrice carrée.
-    Les éléments sous la diagonale sont remplacés par zéro.
+    Construit la matrice triangulaire supérieure suivante :
+        Upper(A)[i][j] = A[i][j] + A[j][i]   si i < j
+        Upper(A)[i][i] = A[i][i]
+        Upper(A)[i][j] = 0                   si i > j
+
+    L'addition dans F16 est le XOR (^).
 
     PARAMETRE :
         A : matrice carrée.
@@ -107,12 +109,12 @@ def upper_triangle(A):
 
     return [
         [
-            A[i][j] if j >= i else 0
+            (A[i][j] ^ A[j][i]) if j > i
+            else (A[i][j] if j == i else 0)
             for j in range(size)
         ]
         for i in range(size)
     ]
-
 
 # ============================================================
 # 4. VERIFICATION DES PARAMETRES
@@ -838,6 +840,108 @@ def test_generate_keypair():
 
     print("Generation des cles reussie !")
 
+def test_upper_triangle():
+    """
+    TITRE : Test de la fonction upper_triangle.
+
+    DESCRIPTION :
+    Vérifie que upper_triangle respecte la définition de Upper
+    de la spécification MAYO :
+
+        Upper(M)[i][j] = M[i][j] + M[j][i]   si i < j
+        Upper(M)[i][i] = M[i][i]
+        Upper(M)[i][j] = 0                   si i > j
+
+    L'addition dans F16 est le XOR.
+    """
+
+    print("\n===== TEST UPPER_TRIANGLE =====")
+
+    # Exemple a la main : 2 XOR 3 = 1
+    A = [[1, 2], [3, 4]]
+    attendu = [[1, 1], [0, 4]]
+    resultat = upper_triangle(A)
+
+    print("Entree   :", A)
+    print("Resultat :", resultat)
+    print("Attendu  :", attendu)
+
+    assert resultat == attendu, "upper_triangle doit ajouter M[j][i] a M[i][j]"
+
+    # Matrice aleatoire O_DIM x O_DIM
+    B = [
+        [secrets.randbelow(Q) for _ in range(O_DIM)]
+        for _ in range(O_DIM)
+    ]
+
+    U = upper_triangle(B)
+
+    for i in range(O_DIM):
+        for j in range(O_DIM):
+
+            if j > i:
+                attendu_ij = B[i][j] ^ B[j][i]
+            elif j == i:
+                attendu_ij = B[i][i]
+            else:
+                attendu_ij = 0
+
+            assert U[i][j] == attendu_ij, (
+                f"Erreur a la position ({i}, {j})"
+            )
+
+    print("Upper conforme a la specification MAYO !")
+
+
+def test_trapdoor_P3():
+    """
+    TITRE : Test de la propriété de trappe de P3.
+
+    DESCRIPTION :
+    Pour tout vecteur t de F16^O_DIM, le vecteur x = (O*t, t)
+    appartient à l'espace Oil. La forme quadratique de chaque
+    P_i doit s'annuler sur x :
+
+        v^T P1[i] v + v^T P2[i] t + t^T P3[i] t = 0    avec v = O*t
+
+    Ce test est indépendant de la fonction Upper : il vérifie
+    directement que P3 est cohérent avec O, P1 et P2.
+    """
+
+    print("\n===== TEST PROPRIETE DE TRAPPE (P3) =====")
+
+    seed_sk = generate_secret_seed()
+    seed_pk, encoded_O = derive_key_material(seed_sk)
+
+    O = decode_O(encoded_O)
+    P1, P2 = generate_P1_P2(seed_pk)
+    P3 = compute_P3(O, P1, P2)
+
+    nombre_vecteurs = 3
+
+    for n_test in range(nombre_vecteurs):
+
+        # Vecteur colonne t aleatoire de dimension O_DIM
+        t = [[secrets.randbelow(Q)] for _ in range(O_DIM)]
+
+        v = matrix_multiply(O, t)
+
+        v_T = matrix_transpose(v)
+        t_T = matrix_transpose(t)
+
+        for i in range(M):
+
+            a = matrix_multiply(v_T, matrix_multiply(P1[i], v))[0][0]
+            b = matrix_multiply(v_T, matrix_multiply(P2[i], t))[0][0]
+            c = matrix_multiply(t_T, matrix_multiply(P3[i], t))[0][0]
+
+            assert a ^ b ^ c == 0, (
+                f"La forme quadratique ne s'annule pas "
+                f"(vecteur {n_test}, matrice {i})"
+            )
+
+    print("La forme quadratique s'annule sur l'espace Oil !")
+    print(f"{nombre_vecteurs} vecteurs x {M} matrices verifies.")
 
 # ============================================================
 # 14. POINT D'ENTREE DU PROGRAMME
@@ -854,3 +958,7 @@ if __name__ == "__main__":
     test_compute_P3()
 
     test_generate_keypair()
+
+    test_upper_triangle()
+
+    test_trapdoor_P3()
