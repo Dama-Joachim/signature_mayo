@@ -183,46 +183,146 @@ def solve_linear_system(A, b):
     return solution
 
 
-# def test_matrices():
+# ============================================================
+# OPERATIONS SUR LES VECTEURS
+# ============================================================
 
-#     A = [
-#         [1, 2],
-#         [3, 4]
-#     ]
+def vector_add(a, b):
+    """
+    TITRE : Addition de deux vecteurs de F16.
 
-#     B = [
-#         [5, 6],
-#         [7, 8]
-#     ]
+    DESCRIPTION :
+    Additionne les deux vecteurs composante par composante
+    avec l'addition de F16 (fonction add de mayo_operation).
 
-#     print("\n===== TESTS DES MATRICES =====")
+    PARAMETRES :
+        a : premier vecteur.
+        b : second vecteur, de même longueur que a.
 
-#     # Addition
-#     print("Addition :", matrix_add(A, B))
+    RETOUR :
+        Le vecteur a + b.
+    """
 
-#     # Transposition
-#     print("Transposee :", matrix_transpose(A))
+    if len(a) != len(b):
+        raise ValueError("Les vecteurs doivent avoir la meme longueur")
 
-#     # Multiplication
-#     print("Multiplication :", matrix_multiply(A, B))
-
-#     # Multiplication matrice-vecteur
-#     x = [5, 6]
-#     print("Produit matrice-vecteur :",
-#           matrix_vector_multiply(A, x))
-
-#     # Resolution du systeme Ax = b
-#     b = [5, 6]
-#     solution = solve_linear_system(A, b)
-
-#     print("Solution du systeme :", solution)
-
-#     # Verification de la solution
-#     assert solution is not None
-#     assert matrix_vector_multiply(A, solution) == b
-
-#     print("\nTous les tests des matrices sont reussis !")
+    return [add(x, y) for x, y in zip(a, b)]
 
 
-# if __name__ == "__main__":
-#     test_matrices()
+def vector_subtract(a, b):
+    """
+    TITRE : Soustraction de deux vecteurs de F16.
+
+    DESCRIPTION :
+    Soustrait les deux vecteurs composante par composante
+    avec la soustraction de F16 (fonction subtract de mayo_operation).
+
+    PARAMETRES :
+        a : premier vecteur.
+        b : second vecteur, de même longueur que a.
+
+    RETOUR :
+        Le vecteur a - b.
+    """
+
+    if len(a) != len(b):
+        raise ValueError("Les vecteurs doivent avoir la meme longueur")
+
+    return [subtract(x, y) for x, y in zip(a, b)]
+
+
+def vector_dot(a, b):
+    """
+    TITRE : Produit scalaire de deux vecteurs de F16.
+
+    DESCRIPTION :
+    Calcule la somme des produits composante par composante,
+    avec les opérations add et multiply de F16.
+
+    PARAMETRES :
+        a : premier vecteur.
+        b : second vecteur, de même longueur que a.
+
+    RETOUR :
+        Un élément de F16 : a . b.
+    """
+
+    if len(a) != len(b):
+        raise ValueError("Les vecteurs doivent avoir la meme longueur")
+
+    total = 0
+
+    for x, y in zip(a, b):
+        total = add(total, multiply(x, y))
+
+    return total
+
+
+# ============================================================
+# EVALUATION DE LA FORME QUADRATIQUE (OPTIMISÉE)
+# ============================================================
+
+def evaluate_quadratic_form(P1, P2, P3, s_blocks, V, O_DIM, K, M_poly, E):
+    """
+    TITRE : Évaluation de la clé publique P*(s) = somme_{i<=j} E_ij * u_ij.
+
+    DESCRIPTION :
+    Chaque P_a est la matrice triangulaire supérieure par blocs
+        P_a = [[P1_a, P2_a], [0, P3_a]]    (taille n x n)
+    et, pour s_i = (v_i, x_i) de taille n :
+        u_ij[a] = s_i^T P_a s_j                      si i = j
+        u_ij[a] = s_i^T P_a s_j + s_j^T P_a s_i      si i != j
+
+    Les matrices P1_a et P3_a sont utilisées TELLES QUE STOCKEES
+    (triangulaires supérieures, zéros sous la diagonale) : elles
+    ne sont pas symétrisées.
+
+    PARAMETRES :
+        P1, P2, P3 : listes des M_poly matrices de la clé publique.
+        s_blocks   : liste des K vecteurs s_i de taille V + O_DIM.
+        V, O_DIM, K, M_poly : paramètres du schéma.
+        E          : table E[i][j] des matrices M_poly x M_poly
+                     (voir mayo_emulsifier).
+
+    RETOUR :
+        Le vecteur P*(s) de F16^M_poly.
+    """
+
+    # W[j][a] = P_a * s_j  (vecteur de taille n)
+    W = []
+
+    for sj in s_blocks:
+        vj = sj[:V]
+        xj = sj[V:]
+
+        Wj = []
+
+        for a in range(M_poly):
+            top = vector_add(
+                matrix_vector_multiply(P1[a], vj),
+                matrix_vector_multiply(P2[a], xj)
+            )
+            bottom = matrix_vector_multiply(P3[a], xj)
+
+            Wj.append(top + bottom)
+
+        W.append(Wj)
+
+    y = [0] * M_poly
+
+    for i in range(K):
+        for j in range(i, K):
+
+            u = []
+
+            for a in range(M_poly):
+                val = vector_dot(s_blocks[i], W[j][a])
+
+                if i != j:
+                    val = add(val, vector_dot(s_blocks[j], W[i][a]))
+
+                u.append(val)
+
+            y = vector_add(y, matrix_vector_multiply(E[i][j], u))
+
+    return y
